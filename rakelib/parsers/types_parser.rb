@@ -51,15 +51,21 @@ module Parsers
       name
     end
 
-    def parse_type(header, _type_name)
+    def parse_type(header, type_name)
       # Check if this is a union type (list of types without a table)
+      description = first_description_paragraph(header)
       next_sibling = find_next_significant_sibling(header)
 
       if union_type?(next_sibling)
-        parse_union_type(next_sibling)
+        parse_union_type(next_sibling, description, type_name)
       else
         parse_table_type(header)
       end
+    end
+
+    def first_description_paragraph(header)
+      sibling = header.next_element
+      sibling if sibling&.name == 'p'
     end
 
     def find_next_significant_sibling(header)
@@ -73,9 +79,13 @@ module Parsers
       element&.name == 'ul'
     end
 
-    def parse_union_type(ul_element)
-      types = ul_element.css('li a').map { |a| a.text.strip }
-      { 'type' => types }
+    def parse_union_type(ul_element, description, type_name)
+      types = []
+      desc_text = description&.text.to_s
+      types << 'string' if desc_text.match?(/String for plain text/i)
+      types << "array:#{type_name}" if desc_text.match?(/an Array of #{type_name}/i)
+      types.concat(ul_element.css('li a').map { |a| a.text.strip })
+      { 'type' => types.uniq }
     end
 
     def parse_table_type(header)
