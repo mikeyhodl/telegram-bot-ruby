@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.1
+
+### Fixed
+
+- JSON-encode `Hash` params in API calls and parse `RichText` correctly [#340](https://github.com/atipugin/telegram-bot-ruby/pull/340) (thx [@vsevolod](https://github.com/vsevolod))
+
 ## 2.8.0
 
 ### Added
